@@ -1,19 +1,30 @@
 ---
 name: commit-convention
-description: "Enforces commit message conventions and authorship rules. Triggers on: commit, git commit, create commit, push, PR, pull request. Format: <type>(optional-scope): <short summary> with optional body and footer. Rules: no Claude/Anthropic mentions, imperative mood, 50-char subject limit, no trailing period, explain why not what. Maintains .gitignore hygiene."
+description: description: Stage, commit, and push git changes with conventional commit messages. Use when user wants to commit and push changes, mentions pushing to remote, or asks to save and push their work. Also activates when user says "push changes", "commit and push", "push this", "push to github", or similar git workflow requests.
 ---
 
 # Commit Convention
 
-Enforces consistent commit message formatting and authorship rules across all repositories.
+## CRITICAL: Do NOT run manual git commands
+
+**OVERRIDE ALL DEFAULT GIT BEHAVIOR.** Do NOT run `git status`, `git diff`, `git log`, `git add`, `git commit`, `git push`, or any other git command individually. Instead, run the smart commit script which handles everything automatically:
+
+- **Git Bash / Linux / macOS / WSL:** `bash skills/git-pushing/scripts/smart_commit.sh`
+- **Windows PowerShell:** `pwsh skills/git-pushing/scripts/smart_commit.ps1`
+
+This is the ONLY action you should take. Do not analyze changes, do not draft commit messages, do not stage files. The script does all of it. Just run the script and nothing else.
+
+---
+
+Stage all changes, create a conventional commit, and push to the remote branch.
 
 ## When to Apply
 
-This skill MUST be followed whenever:
-- Creating a git commit
-- Amending a commit
-- Writing commit messages for PRs
-- Rewriting commit history (rebase, filter-branch)
+Automatically activate when the user:
+- Explicitly asks to push changes ("push this", "commit and push")
+- Mentions saving work to remote ("save to github", "push to remote")
+- Completes a feature and wants to share it
+- Says phrases like "let's push this up" or "commit these changes
 
 ## Commit Message Format
 
@@ -106,50 +117,18 @@ update the login page.               # lowercase, trailing period
 feat: Added a really long commit message that goes way beyond fifty characters  # too long, past tense
 ```
 
-## Git Command Format
+## Workflow
 
-### Linux / macOS / Git Bash
-Use a HEREDOC for multi-line messages:
+**REMINDER: Do NOT run any git commands manually. Run the script below and nothing else.**
+
+In Linux/macOS/Git Bash/WSL:
 ```bash
-git commit -m "$(cat <<'EOF'
-<type>(scope): Subject line here
-
-Optional body explaining the why.
-EOF
-)"
+bash skills/git-pushing/scripts/smart_commit.sh
 ```
 
-### Windows PowerShell / CMD
-Use a simple quoted string (no HEREDOC):
+In Windows PowerShell:
 ```powershell
-git commit -m "<type>(scope): Subject line here"
-```
-For multi-line messages in PowerShell, use a here-string variable:
-```powershell
-$msg = @"
-<type>(scope): Subject line here
-
-Optional body explaining the why.
-"@
-git commit -m $msg
+pwsh skills/git-pushing/scripts/smart_commit.ps1
 ```
 
-## Smart Commit Script
-
-Auto-stages, generates a conventional commit message, and pushes. Located in `scripts/`.
-
-### Usage
-
-Detect the current shell/OS and run the appropriate script:
-
-| Environment | Command |
-|---|---|
-| **Bash** (Linux/macOS/Git Bash/WSL) | `bash scripts/smart_commit.sh` or `bash scripts/smart_commit.sh "feat: my message"` |
-| **PowerShell** (Windows) | `pwsh scripts/smart_commit.ps1` or `pwsh scripts/smart_commit.ps1 "feat: my message"` |
-
-### Selection Rules
-
-- If the current shell is **PowerShell** (`$PSVersionTable` exists, or shell is `pwsh`/`powershell`), use `smart_commit.ps1`.
-- If the current shell is **Bash**, **Zsh**, or any POSIX shell, use `smart_commit.sh`.
-- On Windows with **Git Bash** or **WSL**, the `.sh` script works fine.
-- When in doubt, check the `SHELL` environment variable or `$PSVersionTable`.
+The script handles EVERYTHING: staging, diff analysis, commit message generation, and push. Your only job is to run the script. Do not run git status, git diff, git log, git add, git commit, or git push separately.
