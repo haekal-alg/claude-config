@@ -1,0 +1,11 @@
+# Ignore everything
+*
+
+# Track skills and hooks
+!skills/
+!skills/**
+!hooks/
+!hooks/**
+
+# Track this file
+!.gitignore
