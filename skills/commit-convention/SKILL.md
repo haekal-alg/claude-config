@@ -7,6 +7,21 @@ description: "Enforces commit message conventions and authorship rules. Triggers
 
 Enforces consistent commit message formatting and authorship rules across all repositories.
 
+## Execution Rule
+
+**ALWAYS** use the smart commit script at `~/.claude/skills/commit-convention/scripts/smart_commit.sh` to perform commits. Do NOT run manual `git add`, `git commit`, or `git push` commands separately. The script handles staging, committing, and pushing automatically.
+
+Usage from any repo:
+```bash
+# Auto-generate commit message:
+bash ~/.claude/skills/commit-convention/scripts/smart_commit.sh
+
+# Provide a custom message:
+bash ~/.claude/skills/commit-convention/scripts/smart_commit.sh "feat(auth): Add OAuth2 login"
+```
+
+When providing a custom message, it **MUST** follow the convention rules below.
+
 ## When to Apply
 
 This skill MUST be followed whenever:
@@ -54,7 +69,13 @@ A noun in parentheses describing the area of change:
 3. **Capitalize first word** - "Add feature" not "add feature"
 4. **No trailing period** - "Fix login flow" not "Fix login flow."
 
-### Body (Optional)
+### Body (Required for large changes)
+A body is **REQUIRED** when:
+- More than 3 files are changed
+- A new feature spans multiple files
+- Significant refactoring or architectural changes
+
+Body rules:
 - Separated from subject by a blank line
 - Explain **why**, not just **what**
 - Wrap at 72 characters per line
@@ -106,50 +127,14 @@ update the login page.               # lowercase, trailing period
 feat: Added a really long commit message that goes way beyond fifty characters  # too long, past tense
 ```
 
-## Git Command Format
-
-### Linux / macOS / Git Bash
-Use a HEREDOC for multi-line messages:
-```bash
-git commit -m "$(cat <<'EOF'
-<type>(scope): Subject line here
-
-Optional body explaining the why.
-EOF
-)"
-```
-
-### Windows PowerShell / CMD
-Use a simple quoted string (no HEREDOC):
-```powershell
-git commit -m "<type>(scope): Subject line here"
-```
-For multi-line messages in PowerShell, use a here-string variable:
-```powershell
-$msg = @"
-<type>(scope): Subject line here
-
-Optional body explaining the why.
-"@
-git commit -m $msg
-```
-
 ## Smart Commit Script
 
-Auto-stages, generates a conventional commit message, and pushes. Located in `scripts/`.
+The script at `~/.claude/skills/commit-convention/scripts/smart_commit.sh` auto-stages, commits, and pushes. Works on Linux, macOS, and Windows (Git Bash/WSL).
 
-### Usage
+```bash
+# Auto-detect commit type:
+bash ~/.claude/skills/commit-convention/scripts/smart_commit.sh
 
-Detect the current shell/OS and run the appropriate script:
-
-| Environment | Command |
-|---|---|
-| **Bash** (Linux/macOS/Git Bash/WSL) | `bash scripts/smart_commit.sh` or `bash scripts/smart_commit.sh "feat: my message"` |
-| **PowerShell** (Windows) | `pwsh scripts/smart_commit.ps1` or `pwsh scripts/smart_commit.ps1 "feat: my message"` |
-
-### Selection Rules
-
-- If the current shell is **PowerShell** (`$PSVersionTable` exists, or shell is `pwsh`/`powershell`), use `smart_commit.ps1`.
-- If the current shell is **Bash**, **Zsh**, or any POSIX shell, use `smart_commit.sh`.
-- On Windows with **Git Bash** or **WSL**, the `.sh` script works fine.
-- When in doubt, check the `SHELL` environment variable or `$PSVersionTable`.
+# Custom message:
+bash ~/.claude/skills/commit-convention/scripts/smart_commit.sh "feat(auth): Add OAuth2 login"
+```

@@ -41,10 +41,10 @@ else
     CHANGED=$(git diff --cached --name-only)
 
     # Count file types
-    CODE_FILES=$(echo "$CHANGED" | grep -ciE '\.(ts|tsx|js|jsx|css|scss|html|vue|svelte)$' || true)
+    CODE_FILES=$(echo "$CHANGED" | grep -ciE '\.(ts|tsx|js|jsx|py|java|kt|go|rs|rb|php|cs|cpp|c|h|hpp|swift|scala|clj|edn|ex|exs|hs|lua|r|m|mm|pl|sh|bash|zsh|fish|sql|css|scss|sass|less|html|vue|svelte|dart|zig|nim|v|jl|f90|ml|mli|elm|purs|rkt)$' || true)
     DOC_FILES=$(echo "$CHANGED" | grep -ciE '\.md$' || true)
     TEST_FILES=$(echo "$CHANGED" | grep -ciE 'test|spec|__test' || true)
-    BUILD_FILES=$(echo "$CHANGED" | grep -ciE 'webpack|tsconfig|package\.json|\.eslint|\.prettier|electron-builder' || true)
+    BUILD_FILES=$(echo "$CHANGED" | grep -ciE 'webpack|tsconfig|package\.json|\.eslint|\.prettier|electron-builder|Makefile|CMakeLists|build\.gradle|pom\.xml|Cargo\.toml|setup\.py|pyproject\.toml|go\.mod|Gemfile|composer\.json' || true)
     CI_FILES=$(echo "$CHANGED" | grep -ciE '\.github/|\.gitlab-ci|Jenkinsfile|\.circleci' || true)
     TOTAL_FILES=$(echo "$CHANGED" | wc -l | tr -d ' ')
 
@@ -102,10 +102,21 @@ else
     fi
 fi
 
+# For large changes (>3 files), append a body listing changed areas
+if [ -z "$CUSTOM_MSG" ] && [ "$TOTAL_FILES" -gt 3 ]; then
+    BODY=""
+    DIRS_LIST=$(echo "$CHANGED" | grep -oE '^[^/]+(/[^/]+)?' | sort -u | head -8)
+    while IFS= read -r dir; do
+        COUNT=$(echo "$CHANGED" | grep -c "^${dir}" || true)
+        BODY="${BODY}\n- ${dir} (${COUNT} files)"
+    done <<< "$DIRS_LIST"
+    COMMIT_MSG="${COMMIT_MSG}\n\nChanged areas:${BODY}"
+fi
+
 info "Commit: $COMMIT_MSG"
 
 # Commit (no AI co-author)
-git commit -m "$COMMIT_MSG"
+git commit -m "$(echo -e "$COMMIT_MSG")"
 
 # Push
 info "Pushing to origin/$BRANCH..."
