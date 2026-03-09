@@ -70,8 +70,17 @@ $xml = New-Object Windows.Data.Xml.Dom.XmlDocument
 $xml.LoadXml($template)
 
 $appId = '{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\WindowsPowerShell\v1.0\powershell.exe'
-$toast = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($appId)
-$toast.Show([Windows.UI.Notifications.ToastNotification]::new($xml))
+$notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($appId)
+
+# Clear any existing toast first so the new one gets its slide-in animation
+[Windows.UI.Notifications.ToastNotificationManager]::History.Remove("claude-prompt", "claude-code", $appId)
+Start-Sleep -Milliseconds 150
+
+# Use fixed Tag+Group so only one toast exists at a time
+$notification = [Windows.UI.Notifications.ToastNotification]::new($xml)
+$notification.Tag = "claude-prompt"
+$notification.Group = "claude-code"
+$notifier.Show($notification)
 
 # Flash taskbar after showing toast
 [Win32Flash]::Flash()
